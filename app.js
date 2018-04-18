@@ -11,7 +11,7 @@ var app = express();
 
 // Body Parser
 // create application/x-www-form-urlencoded parser
-// Nota: Por cada peticion que contenda algo en el body, el medelware (body parser)
+// Nota: Por cada peticion que contenga algo en el body, el middelware (body parser)
 // Transformara los datos en un objeto javascript que se pueda utilizar
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -22,6 +22,7 @@ app.use(bodyParser.json())
 // Importar Rutas
 var appRoutes = require('./routes/app');
 var usuarioRoutes = require('./routes/usuario');
+var loginRoutes = require('./routes/login');
 
 // Conexion a la base de datos
 mongoose.connect('mongodb://localhost:27017/hospitalDB', (err, res) => {
@@ -33,6 +34,7 @@ mongoose.connect('mongodb://localhost:27017/hospitalDB', (err, res) => {
 
 // Definicion de las Rutas
 app.use('/usuario', usuarioRoutes);
+app.use('/login', loginRoutes);
 app.use('/', appRoutes);
 
 

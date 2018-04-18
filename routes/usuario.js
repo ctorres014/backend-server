@@ -2,6 +2,9 @@ var express = require('express');
 //bcryptjs para realizar la encriptacion
 var bcrypt = require('bcryptjs');
 
+//Importamos el middleware
+var md = require('../middlewares/autenticacion');
+
 // Importamos el esquema
 var Usuario = require('../models/usuario');
 
@@ -17,14 +20,14 @@ app.get('/', (req, res, next) => { // Next para continuar con la siguiente instr
         .exec(
             (err, usuarios) => {
                 if (err) {
-                    res.status(500).json({
+                    return res.status(500).json({
                         ok: false,
                         mensaje: 'Error cargando usuario',
                         errors: err
                     });
                 }
 
-                res.status(200).json({
+                return res.status(200).json({
                     OK: true,
                     // como estamos usando las caracteristicas
                     // de ES6 podriamos haber devuelto solo usuarios
@@ -38,7 +41,7 @@ app.get('/', (req, res, next) => { // Next para continuar con la siguiente instr
 // ===========================================
 // Actualizar un usuario
 // ===========================================
-app.put('/:id', (req, res) => {
+app.put('/:id', md.VerificaToken, (req, res) => {
 
     // Obtenemos el id pasado por parametro desde el request
     let id = req.params.id;
@@ -47,7 +50,7 @@ app.put('/:id', (req, res) => {
     Usuario.findById(id, (err, usuario) => {
 
         if (err) {
-            res.status(500).json({
+            return res.status(500).json({
                 ok: false,
                 mensaje: 'Error interno del servidor',
                 errors: err
@@ -55,7 +58,7 @@ app.put('/:id', (req, res) => {
         }
 
         if (!usuario) {
-            res.status(400).json({
+            return res.status(400).json({
                 ok: true,
                 mensaje: 'El usuario no existe',
             });
@@ -69,14 +72,14 @@ app.put('/:id', (req, res) => {
         usuario.save((err, usuarioGuardado) => {
 
             if (err) {
-                res.status(500).json({
+                return res.status(500).json({
                     ok: false,
                     mensaje: 'Error interno del servidor al actualizar',
                     errors: err
                 });
             }
 
-            res.status(200).json({
+            return res.status(200).json({
                 OK: true,
                 usuario: usuarioGuardado
             });
@@ -87,11 +90,10 @@ app.put('/:id', (req, res) => {
 
 });
 
-
 // ===========================================
 // Creamos un usuario
 // ===========================================
-app.post('/', (req, res) => {
+app.post('/', md.VerificaToken, (req, res) => {
 
     var body = req.body;
 
@@ -105,14 +107,14 @@ app.post('/', (req, res) => {
 
     usuario.save((err, usuarioGuardado) => {
         if (err) {
-            res.status(400).json({
+            return res.status(400).json({
                 ok: false,
                 mensaje: 'Error al crear usuario',
                 errors: err
             });
         }
 
-        res.status(201).json({
+        return res.status(201).json({
             OK: true,
             // como estamos usando las caracteristicas
             // de ES6 podriamos haber devuelto solo usuarios
@@ -122,5 +124,28 @@ app.post('/', (req, res) => {
     });
 
 });
+
+// ===========================================
+// Borrar un usuario
+// ===========================================
+app.delete('/:id', md.VerificaToken, (req, res) => {
+    var usuarioId = req.params.id;
+
+    Usuario.findByIdAndRemove(usuarioId, (err, usuario) => {
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'Error al eliminar usuario',
+                errors: err
+            });
+        }
+
+        return res.status(200).json({
+            ok: true,
+            usuario: usuario
+        });
+
+    });
+})
 
 module.exports = app;
